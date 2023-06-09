@@ -1,0 +1,59 @@
+* {
+  font-family: sans-serif;
+}
+
+.wrap {
+  background: #fff;
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.content {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: auto;
+}
+
+.site-header {
+  height: auto;
+  padding: 20px 0;
+  background-color: #4caf50;
+}
+
+.site-header h1 {
+  display: inline-block;
+}
+
+.full-width {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+
+/* ------------card ------------------- */
+
+.card {
+  border: 1px solid #dedede;
+  max-height: 600px;
+}
+.card-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 550px;
+}
+
+.card-images {
+  display: block;
+  margin: 20px auto;
+  max-width: 90%;
+  min-height: 150px;
+}
