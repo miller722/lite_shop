@@ -8,7 +8,6 @@
   display: -ms-flex;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .text-center {
@@ -56,4 +55,34 @@
   margin: 20px auto;
   max-width: 90%;
   min-height: 150px;
+}
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>NAV>>>>>>>>>>>> */
+
+.site-nav {
+  width: 300px;
+  min-height: 100vh;
+  position: fixed;
+  left: -300px;
+  top: 0;
+  z-index: 999999;
+  padding: 10px;
+  transition: all ease 1s;
+  color: #fff;
+}
+
+.close-button-div {
+  text-align: right;
+}
+
+.show-nav {
+  position: relative;
+}
+
+ul.category-list {
+  list-style-type: disc;
+}
+
+ul.category-list a {
+  color: #424242;
 }
