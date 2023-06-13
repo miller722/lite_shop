@@ -8,6 +8,7 @@
   display: -ms-flex;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .text-center {
@@ -47,7 +48,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 550px;
+  height: 400px;
 }
 
 .card-images {
@@ -84,5 +85,8 @@ ul.category-list {
 }
 
 ul.category-list a {
+  color: #424242;
+}
+.site-nav a {
   color: #424242;
 }

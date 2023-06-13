@@ -1,5 +1,3 @@
-console.log('nav.js');
-
 document.querySelector('.close-nav').onclick = closeNav;
 document.querySelector('.show-nav').onclick = showNav;
 
@@ -16,11 +14,9 @@ function getCategoryList() {
             method: 'POST'
         }
     ).then(function (response) {
-        console.log(response);
         return response.text();
     }
     ).then(function (body) {
-        console.log(body);
         showCategoryList(JSON.parse(body));
     })
 }
