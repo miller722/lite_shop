@@ -18,6 +18,8 @@ let mysql = require('mysql');
 
 app.use(express.json());
 
+const nodemailer = require("nodemailer")
+
 let con = mysql.createConnection({
   host: 'localhost',
   user: 'miller',
@@ -30,24 +32,33 @@ app.listen(3000, function () {
 });
 
 app.get('/', function (req, res) {
-  con.query(
-    'SELECT * FROM goods',
-    function (error, result) {
-      if (error) throw error;
-      let goods = {};
-      for (let i = 0; i < result.length; i++) {
-        goods[result[i]['id']] = result[i];
-      } 
-      //console.log(goods);
-      // console.log(JSON.parse(JSON.stringify(goods)));
-      res.render('main', {
-        foo: 'hello',
-        bar: 7,
-        goods: JSON.parse(JSON.stringify(goods))
-      });
-    }
-  );
+  let cat = new Promise(function (resolve, reject) {
+    con.query(
+      "select id,name, cost, image, category from (select id,name,cost,image,category, if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) as ind   from goods, ( select @curr_category := '' ) v ) goods where ind < 3",
+      function (error, result, field) {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+  });
+  let catDescription = new Promise(function (resolve, reject) {
+    con.query(
+      "SELECT * FROM category",
+      function (error, result, field) {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+  });
+  Promise.all([cat, catDescription]).then(function (value) {
+    console.log(value[1]);
+    res.render('index', {
+      goods: JSON.parse(JSON.stringify(value[0])),
+      cat: JSON.parse(JSON.stringify(value[1])),
+    });
+  });
 });
+
 
 app.get('/cat', function (req, res) {
   console.log(req.query.id);
@@ -87,6 +98,11 @@ app.get('/goods', function (req, res) {
   });
 });
 
+app.get('/order', function (req, res) {
+  res.render('order');
+});
+
+
 app.post('/get-category-list', function (req, res) {
   // console.log(req.body);
   con.query('SELECT id, category FROM category', function (error, result, fields) {
@@ -113,3 +129,63 @@ app.post('/get-goods-info', function (req, res) {
     res.send('0');
   }
 });
+
+app.post('/finish-order', function (req, res) {
+  console.log(req.body);
+  if (req.body.key.length != 0) {
+    let key = Object.keys(req.body.key);
+    con.query(
+      'SELECT id,name,cost FROM goods WHERE id IN (' + key.join(',') + ')',
+      function (error, result, fields) {
+        if (error) throw error;
+        console.log(result);
+        sendMail(req.body, result).catch(console.error);
+        res.send('1');
+      });
+  }
+  else {
+    res.send('0');
+  }
+});
+
+
+async function sendMail(data, result) {
+  let res = '<h2>Order in lite shop</h2>';
+  let total = 0;
+  for (let i = 0; i < result.length; i++) {
+    res += `<p>${result[i]['name']} - ${data.key[result[i]['id']]} - ${result[i]['cost'] * data.key[result[i]['id']]} uah</p>`;
+    total += result[i]['cost'] * data.key[result[i]['id']];
+  }
+  console.log(res);
+  res += '<hr>';
+  res += `Total ${total} uah`;
+  res += `<hr>Phone: ${data.phone}`;
+  res += `<hr>Username: ${data.username}`;
+  res += `<hr>Address: ${data.address}`;
+  res += `<hr>Email: ${data.email}`;
+
+  let testAccount = await nodemailer.createTestAccount();
+
+  let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass // generated ethereal password
+    }
+  });
+
+  let mailOption = {
+    from: '<l@gmail.com>',
+    to: "l@gmail.com," + data.email,
+    subject: "Lite shop order",
+    text: 'Hello world',
+    html: res
+  };
+
+  let info = await transporter.sendMail(mailOption);
+  console.log("MessageSent: %s", info.messageId);
+  console.log("PreviewSent: %s", nodemailer.getTestMessageUrl(info));
+  return true;
+}
