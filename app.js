@@ -1,3 +1,11 @@
+
+// Подключение модулей:
+// express: основной модуль Express.js для создания веб-приложения.
+// cookie-parser: модуль для работы с куками (парсинг, установка, чтение).
+// admin: модуль (файл) с обработчиками маршрутов для административного раздела.
+// mysql: модуль для взаимодействия с базой данных MySQL.
+// nodemailer: модуль для отправки электронной почты.
+
 let express = require('express');
 let app = express();
 let cookieParser = require('cookie-parser');
@@ -18,9 +26,11 @@ let mysql = require('mysql');
 /**
 * настраиваем модуль
 */
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(cookieParser());
+
+// Middleware:
+app.use(express.json()); // middleware для обработки JSON-данных в теле запроса.
+app.use(express.urlencoded()); // middleware для обработки данных формы в теле запроса.
+app.use(cookieParser()); // middleware для обработки кук (парсинг, установка, чтение).
 
 const nodemailer = require('nodemailer');
 
@@ -47,6 +57,8 @@ app.use(function (req, res, next) {
   }
 });
 
+// Маршруты:
+// '/': главная страница. Выполняется запрос к базе данных для получения данных о товарах и категориях. Затем данные передаются в шаблон и рендерятся на странице.
 app.get('/', function (req, res) {
   let cat = new Promise(function (resolve, reject) {
     con.query(
@@ -75,6 +87,7 @@ app.get('/', function (req, res) {
   });
 });
 
+// '/cat': страница категории товаров. Выполняется запрос к базе данных для получения данных о категории и товарах в этой категории. Затем данные передаются в шаблон и рендерятся на странице.
 app.get('/cat', function (req, res) {
   console.log(req.query.id);
   let catId = req.query.id;
@@ -105,6 +118,7 @@ app.get('/cat', function (req, res) {
   })
 });
 
+//'/goods/*': страница конкретного товара. Выполняется запрос к базе данных для получения данных о товаре по его слагу (идентификатору). Затем данные передаются в шаблон и рендерятся на странице.
 app.get('/goods/*', function (req, res) {
   console.log('work');
   console.log(req.params);
@@ -115,15 +129,12 @@ app.get('/goods/*', function (req, res) {
   });
 });
 
+//'/order': страница оформления заказа. Рендерится соответствующий шаблон.
 app.get('/order', function (req, res) {
   res.render('order');
 });
 
-app.get('/order', function (req, res) {
-  res.render('order');
-});
-
-
+//'/get-category-list': обработчик POST-запроса для получения списка категорий товаров из базы данных. Отправляет ответ в формате JSON с данными о категориях.
 app.post('/get-category-list', function (req, res) {
   // console.log(req.body);
   con.query('SELECT id, category FROM category', function (error, result, fields) {
@@ -133,6 +144,7 @@ app.post('/get-category-list', function (req, res) {
   });
 });
 
+//'/get-goods-info': обработчик POST-запроса для получения информации о выбранных товарах из базы данных. Отправляет ответ в формате JSON с данными о товарах.
 app.post('/get-goods-info', function (req, res) {
   console.log(req.body.key);
   if (req.body.key.length != 0) {
@@ -151,6 +163,7 @@ app.post('/get-goods-info', function (req, res) {
   }
 });
 
+//'/finish-order': обработчик POST-запроса для сохранения заказа в базе данных и отправки подтверждения на указанный адрес электронной почты.
 app.post('/finish-order', function (req, res) {
   console.log(req.body);
   if (req.body.key.length != 0) {
@@ -170,12 +183,12 @@ app.post('/finish-order', function (req, res) {
   }
 });
 
+//'/admin': страница администратора. Рендерится соответствующий шаблон.
 app.get('/admin', function (req, res) {
   res.render('admin', {});
 });
 
-
-
+//'/admin-order': страница заказов администратора. Выполняется запрос к базе данных для получения списка заказов. Затем данные передаются в шаблон и рендерятся на странице.
 app.get('/admin-order', function (req, res) {
   con.query(`SELECT 
       shop_order.id as id,
@@ -201,6 +214,7 @@ app.get('/admin-order', function (req, res) {
 
 /**
  *  login form ==============================
+ * '/login': страница входа в систему администратора. Рендерится соответствующий шаблон. При отправке формы происходит проверка логина и пароля в базе данных и установка куки для аутентификации.
  */
 app.get('/login', function (req, res) {
   res.render('login', {});
@@ -241,6 +255,7 @@ app.post('/login', function (req, res) {
     });
 });
 
+// сохранение информации о заказе и товарах в базе данных.
 function saveOrder(data, result) {
   // data - информация о пользователе
   // result - сведения о товаре
@@ -263,6 +278,7 @@ function saveOrder(data, result) {
 
 }
 
+// отправка подтверждения заказа на указанный адрес электронной почты с использованием модуля nodemailer.
 async function sendMail(data, result) {
   let res = '<h2>Order in lite shop</h2>';
   let total = 0;
@@ -304,6 +320,7 @@ async function sendMail(data, result) {
   return true;
 }
 
+// генерация случайного хеша указанной длины.
   function makeHash(length) {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
